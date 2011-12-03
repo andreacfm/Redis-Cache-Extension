@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="MongoDBBuilder" basedir="." default="updateExtension">
+
+	<!-- project properties -->
+	<property file="project.properties"/>
+
+	<tstamp prefix="stamp">
+		 <format property="TODAY_UK" pattern="yyyyMMMMdhhmm" locale="en,UK"/>
+	</tstamp>
+	<tstamp prefix="created">
+		<format property="TODAY" pattern="yyyy-MMMM-d" locale="en,UK"/>
+		<format property="TSTAMP" pattern="HH:mm" locale="en,UK"/>
+	</tstamp>
+	
+	<!-- Tests -->
+	<target name="updateExtension" depends="compressExtension">
+
+         <echo message="Deploying new lib"/>
+         <copy todir="${context_path}/lib" overwrite="true">
+             <fileset dir="${project.extPath}/lib" includes="*jar"/>
+         </copy>
+
+         <echo message="Deploying new driver"/>
+         <copy todir="${context_path}/context/admin/cdriver/" overwrite="true">
+             <fileset dir="${project.extPath}/driver" includes="*cfc"/>
+         </copy>
+
+
+         <echo message="restart railo"/>
+		 <get src="http://${server.name}:${server.port}/reload.cfm" dest="output/output.html" ignoreerrors="false" />
+	</target>
+	
+	<target name="compressExtension" depends="replaceConfigVars">
+		<zip destfile="ext/mongodb-cache.zip" basedir="${project.extPath}">
+			<exclude name="**/src/**"/>
+			<exclude name="**/bin/**"/>
+            <exclude name="config.template.xml"/>
+		</zip>
+	</target>
+	
+
+	<target name="replaceConfigVars" depends="copyLibs">
+		<copy file="${project.extPath}/config.template.xml" tofile="${project.extPath}/config.xml" overwrite="true" />
+		<replace file="${project.extPath}/config.xml" token="{version}" value="${version}.${stamp.DSTAMP}${stamp.TSTAMP}" />
+		<replace file="${project.extPath}/config.xml" token="{created}" value="${created.TODAY} ${created.TSTAMP}" />
+	</target>
+	
+	<target name="copyLibs" depends="createJar">
+		<copy todir="${project.extPath}/lib/">
+		    <fileset dir="lib/"/>
+		</copy>
+	</target>
+	
+    <target name="createJar" depends="deleteArchives">
+        <path id="master-classpath">
+            <fileset dir="../../railo/">
+                <include name="*.jar"/>
+             </fileset>
+            <fileset dir="../../lib/">
+                <include name="*.jar"/>
+             </fileset>
+             <fileset dir="lib/">
+                <include name="*.jar"/>
+              </fileset>
+        </path>
+        <javac srcdir="extension/src" destdir="extension/bin">
+             <classpath refid="master-classpath"/>
+        </javac>
+        <jar basedir="extension/bin" destfile="extension/lib/mongodb-cache.jar" />
+    </target>
+	
+	<target name="deleteArchives">
+		<delete dir="${project.extPath}/lib/" includes="*.jar" />
+		<delete dir="ext/" includes="*.zip"/>
+		<delete dir="output/" includes="*.html"/>
+		<delete file="${project.extPath}/config.xml" />
+		<mkdir dir="${project.extPath}/lib/" />
+        <mkdir dir="${basedir}/output"/>
+	</target>
+
+</project>
