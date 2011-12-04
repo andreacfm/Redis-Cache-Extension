@@ -57,7 +57,7 @@
 		)>
 
 	<cffunction name="getClass" returntype="string">
-    	<cfreturn "railo.extension.io.cache.mongodb.MongoDBCache">
+    	<cfreturn "railo.extension.io.cache.redisongoDBCache">
     </cffunction>
     
 	<cffunction name="getLabel" returntype="string" output="no">

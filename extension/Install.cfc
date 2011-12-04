@@ -2,10 +2,10 @@
 	
 	<cfscript>
 		variables.name = "MongoDBCache";
-		variables.id = "railo.extension.io.cache.mongodb.MongoDBCache";
-		variables.jar = "mongodb-cache.jar"
-		variables.driver = "MongoDBCache.cfc"
-		variables.jars = "#variables.jar#,mongo.jar,mongo-java-driver.txt";
+		variables.id = "railo.extension.io.cache.RedisCache";
+		variables.jar = "redis-cache.jar";
+		variables.driver = "RedisCache.cfc";
+		variables.jars = "#variables.jar#,jedis.jar,commons-pool-1.5.5.jar";
 	</cfscript>
     
     <cffunction name="validate" returntype="void" output="no"
