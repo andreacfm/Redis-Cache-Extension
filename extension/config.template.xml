@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <config>
 	<info>
-		<id>10EEC23A-0779-4068-9507A9C5ED4A8699</id>
+		<id>10EEC23A-0779-4068-9507A9C5ED4A8666</id>
 		<version>{version}</version>
-		<name>MongoDBCache</name>
+		<name>RedisCache</name>
 		<type>server</type>
-		<label>MongoDb Cache</label>
-		<description>MongoDb Cache Extension</description>
+		<label>RedisCache</label>
+		<description>Redis Cache Extension</description>
 		<created>{created}</created> 
 		<category>Core Extension</category>
 		<author>Andrea Campolonghi</author>
-		<image>http://preview.getrailo.org/logos/mongodb-logo.png</image>
-		<mailinglist>http://groups.google.com/group/railo-beta</mailinglist>
-		<support>http://groups.google.com/group/railo-beta</support>
-		<documentation>http://wiki.getrailo.com/wiki/extensions:mongodb</documentation>
+		<image>http://preview.getrailo.org/logos/redis-logo.png</image>
+		<mailinglist></mailinglist>
+		<support></support>
+		<documentation>http://wiki.getrailo.com/wiki/extensions:redis</documentation>
 	</info>
 </config>
 

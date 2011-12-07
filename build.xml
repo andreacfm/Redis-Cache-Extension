@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="MongoDBBuilder" basedir="." default="updateExtension">
+<project name="RedisRailoCache" basedir="." default="updateExtension">
 
 	<!-- project properties -->
 	<property file="project.properties"/>
@@ -31,7 +31,7 @@
 	</target>
 	
 	<target name="compressExtension" depends="replaceConfigVars">
-		<zip destfile="ext/mongodb-cache.zip" basedir="${project.extPath}">
+		<zip destfile="ext/redis-cache.zip" basedir="${project.extPath}">
 			<exclude name="**/src/**"/>
 			<exclude name="**/bin/**"/>
             <exclude name="config.template.xml"/>
@@ -66,7 +66,7 @@
         <javac srcdir="extension/src" destdir="extension/bin">
              <classpath refid="master-classpath"/>
         </javac>
-        <jar basedir="extension/bin" destfile="extension/lib/mongodb-cache.jar" />
+        <jar basedir="extension/bin" destfile="extension/lib/redis-cache.jar" />
     </target>
 	
 	<target name="deleteArchives">

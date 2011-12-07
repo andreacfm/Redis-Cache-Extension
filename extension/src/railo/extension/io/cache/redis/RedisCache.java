@@ -4,6 +4,7 @@ import railo.commons.io.cache.Cache;
 import railo.commons.io.cache.CacheEntry;
 import railo.commons.io.cache.CacheEntryFilter;
 import railo.commons.io.cache.CacheKeyFilter;
+import railo.runtime.config.Config;
 import railo.runtime.type.Struct;
 
 import java.io.IOException;
@@ -11,9 +12,22 @@ import java.util.List;
 
 public class RedisCache implements Cache{
 
-    public void init(String s, Struct struct) throws IOException {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void init(String cacheName, Struct arguments) throws IOException {
+        RedisConnection.init(arguments);
     }
+
+    public void init(Config config, String[] cacheName, Struct[] arguments) {
+        //Not used at the moment
+    }
+
+    public void init(Config config, String cacheName, Struct arguments) {
+        try {
+            init(cacheName, arguments);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public CacheEntry getCacheEntry(String s) throws IOException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
