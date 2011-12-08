@@ -5,6 +5,8 @@ extension/bin/
 extension/lib/
 extension/config.xml
 WEB-INF/
+/unames.xml
+output/
 
 #extensions
 *.project
