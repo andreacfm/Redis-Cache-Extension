@@ -5,9 +5,12 @@ import railo.commons.io.cache.CacheEntry;
 import railo.commons.io.cache.CacheEntryFilter;
 import railo.commons.io.cache.CacheKeyFilter;
 import railo.extension.util.Functions;
+import railo.loader.engine.CFMLEngine;
+import railo.loader.engine.CFMLEngineFactory;
 import railo.runtime.config.Config;
 import railo.runtime.exp.PageException;
 import railo.runtime.type.Struct;
+import railo.runtime.util.Cast;
 import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
@@ -16,6 +19,9 @@ import java.util.List;
 public class RedisCache implements Cache{
 
     public Functions func = new Functions();
+    CFMLEngine engine = CFMLEngineFactory.getInstance();
+    Cast caster = engine.getCastUtil();
+
 
     public void init(String cacheName, Struct arguments) throws IOException {
         RedisConnection.init(arguments);
@@ -34,25 +40,25 @@ public class RedisCache implements Cache{
     }
 
 
-    public CacheEntry getCacheEntry(String s) throws IOException {
-        System.out.println("1 getCacheEntry");
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public Object getValue(String key) throws IOException {
+    public CacheEntry getCacheEntry(String key) throws IOException {
         Jedis conn = RedisConnection.getInstance();
-        try{
-            return func.evaluate(conn.get(key));
-        }catch (PageException e){
-            e.printStackTrace();
-            return null;
+        try {
+            return new RedisCacheEntry(new RedisCacheItem(key,conn.get(key.toLowerCase())));
+        } catch (Exception e) {
+            throw(new IOException("Cache key" + key + "has not been found"));
         }
     }
 
-    public CacheEntry getCacheEntry(String s, CacheEntry cacheEntry) {
-        System.out.println("2 getCacheEntry");
+    public Object getValue(String key) throws IOException {
+        return getCacheEntry(key).getValue();
+    }
 
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public CacheEntry getCacheEntry(String key, CacheEntry cacheEntry) {
+        try {
+            return getCacheEntry(key);
+        } catch (Exception e) {
+            return cacheEntry;
+        }
     }
 
     public Object getValue(String key, Object o) {
@@ -75,10 +81,12 @@ public class RedisCache implements Cache{
 
     public boolean contains(String key) {
         Jedis conn = RedisConnection.getInstance();
-        return conn.exists(key);
+        return conn.exists(key.toLowerCase());
     }
 
     public boolean remove(String key) {
+        System.out.print("key");
+
         Jedis conn = RedisConnection.getInstance();
 
         try {
@@ -92,10 +100,12 @@ public class RedisCache implements Cache{
     }
 
     public int remove(CacheKeyFilter cacheKeyFilter) {
+        System.out.print("one");
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public int remove(CacheEntryFilter cacheEntryFilter) {
+        System.out.print("two");
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

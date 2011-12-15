@@ -1,11 +1,21 @@
 package railo.extension.io.cache.redis;
 
 import railo.commons.io.cache.CacheEntry;
+import railo.extension.util.Functions;
+import railo.runtime.exp.PageException;
 import railo.runtime.type.Struct;
 
 import java.util.Date;
 
 public class RedisCacheEntry implements CacheEntry{
+
+    RedisCacheItem item;
+    Functions func = new Functions();
+    
+    public RedisCacheEntry(RedisCacheItem redisCacheItem) {
+        item = redisCacheItem;
+    }
+
     public Date lastHit() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -23,11 +33,16 @@ public class RedisCacheEntry implements CacheEntry{
     }
 
     public String getKey() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return item.getKey();
     }
 
     public Object getValue() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        try {
+            return func.evaluate(item.getValue());
+        } catch (PageException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            return null;
+        }
     }
 
     public long size() {

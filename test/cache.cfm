@@ -1,14 +1,14 @@
 <cfset request.tempdir = expandPath("temp/")>
 
 <cfcache
-	action = "clientcache"   
-	directory = "#request.tempdir#"   
+	action = "clientcache"
+	directory = "#request.tempdir#"
 	timespan = "#CreateTimeSpan(0,0,1,10)#">
 <cfcache
-	action = "clientcache"   
-	directory = "#request.tempdir#"   
+	action = "clientcache"
+	directory = "#request.tempdir#"
 	timespan = "#CreateTimeSpan(0,0,1,10)#">
-	
+
 <cfset server.enableCache=true>
 
 
