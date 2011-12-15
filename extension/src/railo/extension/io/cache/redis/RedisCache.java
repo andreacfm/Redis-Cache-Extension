@@ -14,6 +14,8 @@ import railo.runtime.util.Cast;
 import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class RedisCache implements Cache{
@@ -42,21 +44,27 @@ public class RedisCache implements Cache{
 
     public CacheEntry getCacheEntry(String key) throws IOException {
         Jedis conn = RedisConnection.getInstance();
-        try {
-            return new RedisCacheEntry(new RedisCacheItem(key,conn.get(key.toLowerCase())));
-        } catch (Exception e) {
-            throw(new IOException("Cache key" + key + "has not been found"));
+        String val = conn.get(key.toLowerCase());
+        if(val == null){
+            throw(new IOException("Cache key [" + key +"] does not exists"));
         }
+        RedisCacheItem item = new RedisCacheItem(key, val);
+        return new RedisCacheEntry(item);
     }
 
     public Object getValue(String key) throws IOException {
-        return getCacheEntry(key).getValue();
+        try{
+            CacheEntry entry = getCacheEntry(key);
+            return getCacheEntry(key).getValue();
+        }catch (IOException e){
+            return null;
+        }
     }
 
     public CacheEntry getCacheEntry(String key, CacheEntry cacheEntry) {
         try {
             return getCacheEntry(key);
-        } catch (Exception e) {
+        } catch (IOException e) {
             return cacheEntry;
         }
     }
@@ -69,7 +77,7 @@ public class RedisCache implements Cache{
         }
     }
 
-    public void put(String key, Object val, Long aLong, Long aLong1) {
+    public void put(String key, Object val, Long expire, Long idle) {
         Jedis conn = RedisConnection.getInstance();
         try {
             String value = func.serialize(val);
@@ -85,36 +93,52 @@ public class RedisCache implements Cache{
     }
 
     public boolean remove(String key) {
-        System.out.print("key");
-
         Jedis conn = RedisConnection.getInstance();
-
-        try {
-            conn.del(key);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+        Long res = conn.del(key.toLowerCase());
+        if(res == 1){
+            return true;
         }
-
-        return true;
+        return false;
     }
 
     public int remove(CacheKeyFilter cacheKeyFilter) {
-        System.out.print("one");
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        int removed = 0;
+        List keys = keys(cacheKeyFilter);
+        Iterator<String> it = keys.iterator();
+
+        while(it.hasNext()){
+            boolean res = remove(it.next());
+            if(res){
+                removed++;
+            }
+        }
+        return removed;
     }
 
     public int remove(CacheEntryFilter cacheEntryFilter) {
-        System.out.print("two");
+        System.out.println("entryfilter");
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public List keys() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        Jedis conn = RedisConnection.getInstance();
+        ArrayList res = new ArrayList(conn.keys("*"));
+        return res;
     }
 
     public List keys(CacheKeyFilter cacheKeyFilter) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        List keys = keys();
+        ArrayList res = new ArrayList();
+        Iterator<String> it = keys.iterator();
+
+        while(it.hasNext()){
+            String key = it.next();
+            if(cacheKeyFilter.accept(key)){
+                res.add(key);
+            }
+        }
+
+        return res;
     }
 
     public List keys(CacheEntryFilter cacheEntryFilter) {

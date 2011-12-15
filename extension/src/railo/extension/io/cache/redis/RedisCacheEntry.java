@@ -38,6 +38,7 @@ public class RedisCacheEntry implements CacheEntry{
 
     public Object getValue() {
         try {
+            String val = item.getValue();
             return func.evaluate(item.getValue());
         } catch (PageException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
