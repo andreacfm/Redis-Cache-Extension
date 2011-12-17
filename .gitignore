@@ -1,12 +1,12 @@
 #project
-ext/*.zip
+build/*.zip
 extension/output/*.*
-extension/bin/
 extension/lib/
 extension/config.xml
 WEB-INF/
 unames.xml
 output/
+bin/
 
 #extensions
 *.project

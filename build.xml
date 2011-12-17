@@ -27,11 +27,11 @@
 
 
          <echo message="restart railo"/>
-		 <get src="http://${server.name}:${server.port}/reload.cfm" dest="output/output.html" ignoreerrors="false" />
+		 <get src="http://${server.name}:${server.port}${server.context}/reload.cfm" dest="output/output.html" ignoreerrors="false" />
 	</target>
 	
 	<target name="compressExtension" depends="replaceConfigVars">
-		<zip destfile="ext/redis-cache.zip" basedir="${project.extPath}">
+		<zip destfile="build/redis-cache.zip" basedir="${project.extPath}">
 			<exclude name="**/src/**"/>
 			<exclude name="**/bin/**"/>
             <exclude name="config.template.xml"/>
@@ -63,15 +63,15 @@
                 <include name="*.jar"/>
               </fileset>
         </path>
-        <javac srcdir="extension/src" destdir="extension/bin">
+        <javac srcdir="src" destdir="bin">
              <classpath refid="master-classpath"/>
         </javac>
-        <jar basedir="extension/bin" destfile="extension/lib/redis-cache.jar" />
+        <jar basedir="bin" destfile="extension/lib/redis-cache.jar" />
     </target>
 	
 	<target name="deleteArchives">
 		<delete dir="${project.extPath}/lib/" includes="*.jar" />
-		<delete dir="ext/" includes="*.zip"/>
+		<delete dir="build/" includes="*.zip"/>
 		<delete dir="output/" includes="*.html"/>
 		<delete file="${project.extPath}/config.xml" />
 		<mkdir dir="${project.extPath}/lib/" />
