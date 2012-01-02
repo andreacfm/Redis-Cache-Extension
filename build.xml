@@ -47,16 +47,15 @@
 	
 	<target name="copyLibs" depends="createJar">
 		<copy todir="${project.extPath}/lib/">
-		    <fileset dir="lib/"/>
+		    <fileset dir="lib/">
+                <exclude name="jsp-api.jar"/>
+		    </fileset>
 		</copy>
 	</target>
 	
     <target name="createJar" depends="deleteArchives">
         <path id="master-classpath">
-            <fileset dir="../../railo/">
-                <include name="*.jar"/>
-             </fileset>
-            <fileset dir="../../lib/">
+            <fileset dir="WEB-INF/lib/">
                 <include name="*.jar"/>
              </fileset>
              <fileset dir="lib/">

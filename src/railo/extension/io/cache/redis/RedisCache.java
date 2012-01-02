@@ -79,9 +79,12 @@ public class RedisCache implements Cache{
 
     public void put(String key, Object val, Long expire, Long idle) {
         Jedis conn = RedisConnection.getInstance();
+        System.out.println(expire);
+        System.out.println(idle);
         try {
             String value = func.serialize(val);
             conn.set(key.toLowerCase(),value);
+            //conn.expire(key.toLowerCase(),caster.toInteger(expire/1000));
         } catch (PageException e) {
             e.printStackTrace();
         }
