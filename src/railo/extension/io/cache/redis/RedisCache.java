@@ -1,9 +1,11 @@
 package railo.extension.io.cache.redis;
 
+import org.apache.oro.text.regex.MalformedPatternException;
 import railo.commons.io.cache.Cache;
 import railo.commons.io.cache.CacheEntry;
 import railo.commons.io.cache.CacheEntryFilter;
 import railo.commons.io.cache.CacheKeyFilter;
+import railo.extension.io.cache.util.WildCardFilter;
 import railo.extension.util.Functions;
 import railo.loader.engine.CFMLEngine;
 import railo.loader.engine.CFMLEngineFactory;
@@ -23,6 +25,7 @@ public class RedisCache implements Cache{
     public Functions func = new Functions();
     CFMLEngine engine = CFMLEngineFactory.getInstance();
     Cast caster = engine.getCastUtil();
+    String namespace;
 
 
     public void init(String cacheName, Struct arguments) throws IOException {
@@ -44,17 +47,17 @@ public class RedisCache implements Cache{
 
     public CacheEntry getCacheEntry(String key) throws IOException {
         Jedis conn = RedisConnection.getInstance();
-        String val = conn.get(key.toLowerCase());
+        String k = formatKey(key);
+        String val = conn.get(k);
         if(val == null){
-            throw(new IOException("Cache key [" + key +"] does not exists"));
+            throw(new IOException("Cache key [" + k +"] does not exists"));
         }
-        RedisCacheItem item = new RedisCacheItem(key, val);
+        RedisCacheItem item = new RedisCacheItem(k, val);
         return new RedisCacheEntry(item);
     }
 
     public Object getValue(String key) throws IOException {
         try{
-            CacheEntry entry = getCacheEntry(key);
             return getCacheEntry(key).getValue();
         }catch (IOException e){
             return null;
@@ -79,11 +82,9 @@ public class RedisCache implements Cache{
 
     public void put(String key, Object val, Long expire, Long idle) {
         Jedis conn = RedisConnection.getInstance();
-        System.out.println(expire);
-        System.out.println(idle);
         try {
             String value = func.serialize(val);
-            conn.set(key.toLowerCase(),value);
+            conn.set(formatKey(key),value);
             //conn.expire(key.toLowerCase(),caster.toInteger(expire/1000));
         } catch (PageException e) {
             e.printStackTrace();
@@ -92,12 +93,12 @@ public class RedisCache implements Cache{
 
     public boolean contains(String key) {
         Jedis conn = RedisConnection.getInstance();
-        return conn.exists(key.toLowerCase());
+        return conn.exists(formatKey(key));
     }
 
     public boolean remove(String key) {
         Jedis conn = RedisConnection.getInstance();
-        Long res = conn.del(key.toLowerCase());
+        Long res = conn.del(key);
         if(res == 1){
             return true;
         }
@@ -106,7 +107,12 @@ public class RedisCache implements Cache{
 
     public int remove(CacheKeyFilter cacheKeyFilter) {
         int removed = 0;
-        List keys = keys(cacheKeyFilter);
+        List keys = null;
+        try {
+            keys = keys(new WildCardFilter(formatKey(cacheKeyFilter.toPattern()),false));
+        } catch (MalformedPatternException e) {
+            e.printStackTrace();
+        }
         Iterator<String> it = keys.iterator();
 
         while(it.hasNext()){
@@ -125,7 +131,7 @@ public class RedisCache implements Cache{
 
     public List keys() {
         Jedis conn = RedisConnection.getInstance();
-        ArrayList res = new ArrayList(conn.keys("*"));
+        ArrayList res = new ArrayList(conn.keys(RedisConnection.NAMESPACE + '*'));
         return res;
     }
 
@@ -182,5 +188,11 @@ public class RedisCache implements Cache{
 
     public Struct getCustomInfo() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+    
+    
+    private String formatKey(String key){
+        String res = RedisConnection.NAMESPACE + ':' + key;
+        return res.toLowerCase();
     }
 }

@@ -11,6 +11,7 @@ import redis.clients.jedis.Jedis;
 public class RedisConnection {
 
     private static Jedis instance;
+    public static String NAMESPACE;
 
     private RedisConnection() {}
 
@@ -24,6 +25,7 @@ public class RedisConnection {
         }
 
         try{
+            NAMESPACE = caster.toString(arguments.get("namespace"));
             String hosts = caster.toString(arguments.get("hosts"));
             String host = hosts.split(":")[0];
             Integer port = caster.toInteger(hosts.split(":")[1]);
