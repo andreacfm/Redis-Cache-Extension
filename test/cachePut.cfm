@@ -2,7 +2,7 @@
 <cfset cacheClear()>
 
 <cflock scope="server" timeout="10">
-	<cfset cacheName="mongotest">
+	<cfset cacheName="redis_objects">
 	<cfset cacheRemove(arrayToList(cacheGetAllIds()))>
 	<cfset start = getTickCount()>
 	<cfset cachePut('abc','_cachePut',CreateTimeSpan(0,0,0,1))>

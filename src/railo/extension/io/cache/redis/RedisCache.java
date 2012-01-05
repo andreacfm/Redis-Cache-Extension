@@ -47,7 +47,7 @@ public class RedisCache implements Cache{
 
     public CacheEntry getCacheEntry(String key) throws IOException {
         Jedis conn = RedisConnection.getInstance();
-        String k = formatKey(key);
+        String k = RedisCacheUtils.formatKey(key);
         String val = conn.get(k);
         if(val == null){
             throw(new IOException("Cache key [" + k +"] does not exists"));
@@ -84,7 +84,7 @@ public class RedisCache implements Cache{
         Jedis conn = RedisConnection.getInstance();
         try {
             String value = func.serialize(val);
-            conn.set(formatKey(key),value);
+            conn.set(RedisCacheUtils.formatKey(key),value);
             //conn.expire(key.toLowerCase(),caster.toInteger(expire/1000));
         } catch (PageException e) {
             e.printStackTrace();
@@ -93,12 +93,12 @@ public class RedisCache implements Cache{
 
     public boolean contains(String key) {
         Jedis conn = RedisConnection.getInstance();
-        return conn.exists(formatKey(key));
+        return conn.exists(RedisCacheUtils.formatKey(key));
     }
 
     public boolean remove(String key) {
         Jedis conn = RedisConnection.getInstance();
-        Long res = conn.del(key);
+        Long res = conn.del(RedisCacheUtils.formatKey(key));
         if(res == 1){
             return true;
         }
@@ -107,12 +107,7 @@ public class RedisCache implements Cache{
 
     public int remove(CacheKeyFilter cacheKeyFilter) {
         int removed = 0;
-        List keys = null;
-        try {
-            keys = keys(new WildCardFilter(formatKey(cacheKeyFilter.toPattern()),false));
-        } catch (MalformedPatternException e) {
-            e.printStackTrace();
-        }
+        List keys = keys(cacheKeyFilter);
         Iterator<String> it = keys.iterator();
 
         while(it.hasNext()){
@@ -132,13 +127,14 @@ public class RedisCache implements Cache{
     public List keys() {
         Jedis conn = RedisConnection.getInstance();
         ArrayList res = new ArrayList(conn.keys(RedisConnection.NAMESPACE + '*'));
-        return res;
+        return sanitizeKeys(res);
     }
 
     public List keys(CacheKeyFilter cacheKeyFilter) {
         List keys = keys();
         ArrayList res = new ArrayList();
         Iterator<String> it = keys.iterator();
+        CacheKeyFilter filter = null;
 
         while(it.hasNext()){
             String key = it.next();
@@ -155,26 +151,31 @@ public class RedisCache implements Cache{
     }
 
     public List values() {
+        System.out.println("values");
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public List values(CacheKeyFilter cacheKeyFilter) {
+        System.out.println("values key filter");
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public List values(CacheEntryFilter cacheEntryFilter) {
+        System.out.println("values entry filter");
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public List entries() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return entriesList(keys());
     }
 
     public List entries(CacheKeyFilter cacheKeyFilter) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        System.out.println(cacheKeyFilter.toPattern());
+        return entriesList(keys(cacheKeyFilter));
     }
 
     public List entries(CacheEntryFilter cacheEntryFilter) {
+        System.out.println("entries entry filter");
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -189,10 +190,27 @@ public class RedisCache implements Cache{
     public Struct getCustomInfo() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
-    
-    
-    private String formatKey(String key){
-        String res = RedisConnection.NAMESPACE + ':' + key;
-        return res.toLowerCase();
+
+    private List entriesList(List keys){
+        Jedis conn = RedisConnection.getInstance();
+        ArrayList<RedisCacheEntry> res = new ArrayList<RedisCacheEntry>();
+        Iterator<String> it = keys.iterator();
+        while(it.hasNext()){
+            String k = it.next();
+            res.add(new RedisCacheEntry(new RedisCacheItem(k,conn.get(k))));
+        }
+        return res;
     }
+    
+    private List sanitizeKeys(List keys){
+        for(int i = 0; i < keys.size(); i++){
+            try {
+                keys.set(i,RedisCacheUtils.removeNamespace(caster.toString(keys.get(i))));
+            } catch (PageException e) {
+                e.printStackTrace();
+            }
+        }
+        return keys;
+    }
+    
 }

@@ -1,6 +1,6 @@
 <cfif server.ColdFusion.ProductName EQ "railo">
 <cflock scope="server" timeout="1">
-	<cfset cacheName="mongotest">
+	<cfset cacheName="redis_objects">
 	<cfset cacheClear()>
 	
 	<cfset cachePut('abc','123')>

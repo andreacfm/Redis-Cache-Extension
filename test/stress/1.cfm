@@ -14,7 +14,10 @@
 	<cfset total = total + time >
 	<cfoutput>#time/1000# s<br/></cfoutput>
 	<cfflush>
+
+    <cfset cacheClear()>
+
 </cfloop>
 
+
 <cfoutput>Average sec: #(total/10)/1000#</cfoutput>
-<cfoutput>Average millis per operation : #100000/time#</cfoutput>

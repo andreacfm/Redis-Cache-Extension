@@ -33,7 +33,7 @@ public class RedisCacheEntry implements CacheEntry{
     }
 
     public String getKey() {
-        return item.getKey();
+        return RedisCacheUtils.removeNamespace(item.getKey());
     }
 
     public Object getValue() {
@@ -61,4 +61,5 @@ public class RedisCacheEntry implements CacheEntry{
     public Struct getCustomInfo() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
+
 }

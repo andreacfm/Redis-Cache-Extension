@@ -1,3 +1,4 @@
+<cfset cacheClear()>
 <cfset request.tempdir = expandPath("temp/")>
 
 <cfcache
