@@ -80,7 +80,7 @@ public class RedisCache implements Cache{
         }
     }
 
-    public void put(String key, Object val, Long expire, Long idle) {
+    public void put(String key, Object val, Long idle, Long expire) {
         Jedis conn = RedisConnection.getInstance();
         System.out.println(expire);
         Integer exp = 0;
