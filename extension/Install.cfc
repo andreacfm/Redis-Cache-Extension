@@ -1,7 +1,7 @@
 <cfcomponent>
 	
 	<cfscript>
-		variables.name = "MongoDBCache";
+		variables.name = "RedisCache";
 		variables.id = "railo.extension.io.cache.RedisCache";
 		variables.jar = "redis-cache.jar";
 		variables.driver = "RedisCache.cfc";

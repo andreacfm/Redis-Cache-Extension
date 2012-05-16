@@ -7,15 +7,17 @@ import railo.runtime.util.Cast;
 import railo.runtime.exp.PageException;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 public class RedisConnection {
 
-    private static Jedis instance;
+    private static JedisPool instance;
     public static String NAMESPACE;
 
     private RedisConnection() {}
 
-    public static Jedis init(Struct arguments){
+    public static JedisPool init(Struct arguments){
 
         CFMLEngine engine = CFMLEngineFactory.getInstance();
         Cast caster = engine.getCastUtil();
@@ -29,7 +31,7 @@ public class RedisConnection {
             String hosts = caster.toString(arguments.get("hosts"));
             String host = hosts.split(":")[0];
             Integer port = caster.toInteger(hosts.split(":")[1]);
-            instance = new Jedis(host,port);
+            instance = new JedisPool(host, port);
 
         } catch (PageException e) {
             e.printStackTrace();
@@ -38,7 +40,7 @@ public class RedisConnection {
         return instance;
     }
 
-    public static Jedis getInstance(){
+    public static JedisPool getInstance(){
         return instance;
     }
 
