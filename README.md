@@ -27,11 +27,11 @@ Well. You are done.
 
 ###Important
 
-* Metadata:
+* *Metadata*:
     * The cache will return only the hits count for any single key.
     * The general counter (missed, hits) for the cache instance itself are not updated
 
-* idletime:
+* *idletime*:
   Not supported. Any passed value will ne ignored. Timespan is fully supported.
 
 

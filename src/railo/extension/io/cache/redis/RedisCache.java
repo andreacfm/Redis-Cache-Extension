@@ -51,13 +51,12 @@ public class RedisCache implements Cache {
         RedisCacheItem item;
 
         try {
-
             String k = RedisCacheUtils.formatKey(key);
             List<String> val = conn.hmget(k, "value", "hitCount");
-            Integer count = caster.toInteger(conn.hincrBy(k, "hitCount", 1));
-            if (val == null) {
+            if (val.get(0) == null) {
                 throw (new IOException("Cache key [" + k + "] does not exists"));
             }
+            Integer count = caster.toInteger(conn.hincrBy(k, "hitCount", 1));
             item = new RedisCacheItem(k, val.get(0), count);
 
             return new RedisCacheEntry(item);
