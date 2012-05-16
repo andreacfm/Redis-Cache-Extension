@@ -2,10 +2,12 @@ package railo.extension.io.cache.redis;
 
 import railo.commons.io.cache.CacheEntry;
 import railo.extension.util.Functions;
+import railo.loader.engine.CFMLEngineFactory;
 import railo.runtime.exp.PageException;
 import railo.runtime.type.Struct;
 
 import java.util.Date;
+import java.util.HashMap;
 
 public class RedisCacheEntry implements CacheEntry{
 
@@ -29,7 +31,7 @@ public class RedisCacheEntry implements CacheEntry{
     }
 
     public int hitCount() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return item.getHitCount();
     }
 
     public String getKey() {
@@ -59,7 +61,13 @@ public class RedisCacheEntry implements CacheEntry{
     }
 
     public Struct getCustomInfo() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        Struct metadata = CFMLEngineFactory.getInstance().getCreationUtil().createStruct();
+        try{
+            metadata.set("hits", hitCount());
+        }catch (PageException e){
+            e.printStackTrace();
+        }
+        return metadata;
     }
 
 }

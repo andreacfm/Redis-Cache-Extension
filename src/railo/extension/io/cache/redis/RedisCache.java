@@ -13,9 +13,9 @@ import railo.runtime.type.Struct;
 import railo.runtime.util.Cast;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -45,16 +45,26 @@ public class RedisCache implements Cache {
 
 
     public CacheEntry getCacheEntry(String key) throws IOException {
+
         JedisPool pool = RedisConnection.getInstance();
         Jedis conn = pool.getResource();
+        RedisCacheItem item;
+
         try {
+
             String k = RedisCacheUtils.formatKey(key);
-            String val = conn.get(k);
+            List<String> val = conn.hmget(k, "value", "hitCount");
+            Integer count = caster.toInteger(conn.hincrBy(k, "hitCount", 1));
             if (val == null) {
                 throw (new IOException("Cache key [" + k + "] does not exists"));
             }
-            RedisCacheItem item = new RedisCacheItem(k, val);
+            item = new RedisCacheItem(k, val.get(0), count);
+
             return new RedisCacheEntry(item);
+
+        }catch (PageException e){
+            e.printStackTrace();
+            return null;
         } finally {
             pool.returnResource(conn);
         }
@@ -92,12 +102,17 @@ public class RedisCache implements Cache {
             if (expire != null) {
                 exp = caster.toInteger(expire / 1000);
             }
+
             String k = RedisCacheUtils.formatKey(key);
             String value = func.serialize(val);
+
+            HashMap<String, String> fields = new HashMap<String, String>();
+            fields.put("value", value);
+            fields.put("hitCount", "0");
+            conn.hmset(k, fields);
+
             if (exp > 0) {
-                conn.setex(k, exp, value);
-            } else {
-                conn.set(k, value);
+                conn.expire(k, exp);
             }
         } catch (PageException e) {
             e.printStackTrace();
