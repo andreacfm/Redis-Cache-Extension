@@ -48,7 +48,7 @@
 	<target name="copyLibs" depends="createJar">
 		<copy todir="${project.extPath}/lib/">
 		    <fileset dir="lib/">
-                <exclude name="jsp-api.jar"/>
+                <exclude name="jsp-api-2.0.jar"/>
 		    </fileset>
 		</copy>
 	</target>
