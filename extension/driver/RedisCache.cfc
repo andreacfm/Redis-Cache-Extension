@@ -10,7 +10,7 @@
         field(
             displayName = "Namespace",
             name = "namespace",
-            defaultValue = getapplicationsettings().name,
+            defaultValue = "railo:cache",
             required = true,
             description = "Keys namespace. Be sure that any cache use a unique namespace to avoid keys names clashing."
                )
