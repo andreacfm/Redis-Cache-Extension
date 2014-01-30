@@ -98,11 +98,14 @@ public class RedisCache implements Cache {
         Jedis conn = pool.getResource();
         try {
             Integer exp = 0;
-            if (expire != null) {
-                exp = caster.toInteger(expire / 1000);
-            }
 
             String k = RedisCacheUtils.formatKey(key);
+            if (expire != null) {
+                exp = caster.toInteger(expire / 1000);
+            // If expire==null AND this is for SESSION scope storage AND idle is not null, use idle as the expire value
+            } else if (k.contains(":railo-storage:session:") && idle != null) {
+                exp = caster.toInteger(idle / 1000);
+            }
             String value = func.serialize(val);
 
             HashMap<String, String> fields = new HashMap<String, String>();

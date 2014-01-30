@@ -11,7 +11,7 @@
 		<format property="TODAY" pattern="yyyy-MMMM-d" locale="en,UK"/>
 		<format property="TSTAMP" pattern="HH:mm" locale="en,UK"/>
 	</tstamp>
-	
+
 	<!-- Tests -->
 	<target name="updateExtension" depends="compressExtension">
 
@@ -29,7 +29,7 @@
          <echo message="restart railo"/>
 		 <get src="http://${server.name}:${server.port}${server.context}/reload.cfm" dest="output/output.html" ignoreerrors="false" />
 	</target>
-	
+
 	<target name="compressExtension" depends="replaceConfigVars">
 		<zip destfile="build/redis-cache.zip" basedir="${project.extPath}">
 			<exclude name="**/src/**"/>
@@ -37,14 +37,14 @@
             <exclude name="config.template.xml"/>
 		</zip>
 	</target>
-	
+
 
 	<target name="replaceConfigVars" depends="copyLibs">
 		<copy file="${project.extPath}/config.template.xml" tofile="${project.extPath}/config.xml" overwrite="true" />
 		<replace file="${project.extPath}/config.xml" token="{version}" value="${version}.${stamp.DSTAMP}${stamp.TSTAMP}" />
 		<replace file="${project.extPath}/config.xml" token="{created}" value="${created.TODAY} ${created.TSTAMP}" />
 	</target>
-	
+
 	<target name="copyLibs" depends="createJar">
 		<copy todir="${project.extPath}/lib/">
 		    <fileset dir="lib/">
@@ -52,7 +52,7 @@
 		    </fileset>
 		</copy>
 	</target>
-	
+
     <target name="createJar" depends="deleteArchives">
         <path id="master-classpath">
             <fileset dir="WEB-INF/lib/">
@@ -62,12 +62,12 @@
                 <include name="*.jar"/>
               </fileset>
         </path>
-        <javac srcdir="src" destdir="bin">
+        <javac target="1.6" source="1.6" srcdir="src" destdir="bin">
              <classpath refid="master-classpath"/>
-        </javac>
+   		</javac>
         <jar basedir="bin" destfile="extension/lib/redis-cache.jar" />
     </target>
-	
+
 	<target name="deleteArchives">
 		<delete dir="${project.extPath}/lib/" includes="*.jar" />
 		<delete dir="build/" includes="*.zip"/>
