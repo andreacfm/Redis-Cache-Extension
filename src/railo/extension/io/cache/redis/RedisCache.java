@@ -13,6 +13,7 @@ import railo.runtime.type.Struct;
 import railo.runtime.util.Cast;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,13 +61,18 @@ public class RedisCache implements Cache {
             item = new RedisCacheItem(k, val.get(0), count);
 
             return new RedisCacheEntry(item);
-
-        }catch (PageException e){
+        } catch (JedisConnectionException e) {
+            if (null != conn) {
+                pool.returnBrokenResource(conn);
+                conn = null;
+            }
+        } catch (PageException e) {
             e.printStackTrace();
-            return null;
         } finally {
-            pool.returnResource(conn);
+            if (null != conn)
+                pool.returnResource(conn);
         }
+        return null;
     }
 
     public Object getValue(String key) throws IOException {
@@ -116,10 +122,16 @@ public class RedisCache implements Cache {
             if (exp > 0) {
                 conn.expire(k, exp);
             }
+        } catch (JedisConnectionException e) {
+            if (null != conn) {
+                pool.returnBrokenResource(conn);
+                conn = null;
+            }
         } catch (PageException e) {
             e.printStackTrace();
         } finally {
-            pool.returnResource(conn);
+            if (null != conn)
+                pool.returnResource(conn);
         }
     }
 
@@ -128,6 +140,11 @@ public class RedisCache implements Cache {
         Jedis conn = pool.getResource();
         try {
             return conn.exists(RedisCacheUtils.formatKey(key));
+        } catch (JedisConnectionException e) {
+            if (null != conn) {
+                pool.returnBrokenResource(conn);
+            }
+            return false;
         } finally {
             pool.returnResource(conn);
         }
@@ -139,6 +156,11 @@ public class RedisCache implements Cache {
         try {
             Long res = conn.del(RedisCacheUtils.formatKey(key));
             return res == 1;
+        } catch (JedisConnectionException e) {
+            if (null != conn) {
+                pool.returnBrokenResource(conn);
+            }
+            return false;
         } finally {
             pool.returnResource(conn);
         }
@@ -165,12 +187,19 @@ public class RedisCache implements Cache {
     public List keys() {
         JedisPool pool = RedisConnection.getInstance();
         Jedis conn = pool.getResource();
+        ArrayList res = null;
+
         try {
-            ArrayList res = new ArrayList(conn.keys(RedisConnection.NAMESPACE + '*'));
-            return sanitizeKeys(res);
+            res = new ArrayList(conn.keys(RedisConnection.NAMESPACE + '*'));
+        } catch (JedisConnectionException e) {
+            if (null != conn) {
+                pool.returnBrokenResource(conn);
+            }
         } finally {
             pool.returnResource(conn);
         }
+
+        return sanitizeKeys(res);
     }
 
     public List keys(CacheKeyFilter cacheKeyFilter) {
@@ -232,19 +261,24 @@ public class RedisCache implements Cache {
     private List entriesList(List keys) {
         JedisPool pool = RedisConnection.getInstance();
         Jedis conn = pool.getResource();
+        ArrayList<RedisCacheEntry> res = null;
+
         try {
-            ArrayList<RedisCacheEntry> res = new ArrayList<RedisCacheEntry>();
+            res = new ArrayList<RedisCacheEntry>();
             Iterator<String> it = keys.iterator();
             while (it.hasNext()) {
                 String k = it.next();
                 res.add(new RedisCacheEntry(new RedisCacheItem(k, conn.get(k))));
             }
 
-            return res;
-
+        } catch (JedisConnectionException e) {
+            if (null != conn) {
+                pool.returnBrokenResource(conn);
+            }
         } finally {
             pool.returnResource(conn);
         }
+        return res;
     }
 
     private List sanitizeKeys(List keys) {
