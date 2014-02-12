@@ -5,11 +5,7 @@ Feel free to fork it and provide your feedbacks.
 
 ###Installation
 
-Add the following address to your Railo Server Admin Providers list.
-
-    http://preview.getrailo.org/ExtensionProvider.cfc
-
-Install the extension from the Applications section. Please note that the extension is installable only in the *server* admin.
+Install the extension from the railo extension store in railo admin. Please note that the extension is installable only in the *server* admin.
 This means that is not possible to install it for a single web context.
 
 ###Create and configure the cache
@@ -32,7 +28,7 @@ Well. You are done.
     * The general counter (missed, hits) for the cache instance itself are not updated
 
 * *idletime*:
-  Not supported. Any passed value will ne ignored. Timespan is fully supported.
+  Not supported. Any passed value will be ignored. Timespan is fully supported.
 
 
 
