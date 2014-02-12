@@ -28,10 +28,16 @@ public class RedisConnection {
 
         try{
             NAMESPACE = caster.toString(arguments.get("namespace"));
+
             String hosts = caster.toString(arguments.get("hosts"));
             String host = hosts.split(":")[0];
+
             Integer port = caster.toInteger(hosts.split(":")[1]);
-            instance = new JedisPool(host, port);
+
+            JedisPoolConfig config = new JedisPoolConfig();
+            config.setTestOnBorrow(true);
+
+            instance = new JedisPool(config, host, port);
 
         } catch (PageException e) {
             e.printStackTrace();
