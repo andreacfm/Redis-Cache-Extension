@@ -7,10 +7,10 @@
 		<type>server</type>
 		<label>RedisCache</label>
 		<description>Redis Cache Extension</description>
-		<created>{created}</created> 
+		<created>{created}</created>
 		<category>Core Extension</category>
 		<author>Andrea Campolonghi</author>
-		<image>http://preview.getrailo.org/logos/redis-logo.png</image>
+		<!--<image>http://preview.getrailo.org/logos/redis-logo.png</image>-->
 		<mailinglist></mailinglist>
 		<support></support>
 		<documentation>https://github.com/andreacfm/Redis-Cache-Extension</documentation>
