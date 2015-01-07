@@ -5,16 +5,16 @@ public class RedisCacheUtils {
     private RedisCacheUtils() {
     }
 
-    public static String formatKey(String key){
-        if(key.contains(RedisConnection.NAMESPACE)){
+    public static String formatKey(String cacheName, String key){
+        if(key.contains(RedisConnection.getNamespace(cacheName))){
             return key;
         }
-        String res = RedisConnection.NAMESPACE + ':' + key;
+        String res = RedisConnection.getNamespace(cacheName) + ':' + key;
         return res.toLowerCase();
     }
 
-    public static  String removeNamespace(String key){
-        return key.replace(RedisConnection.NAMESPACE + ":", "");
+    public static  String removeNamespace(String cacheName, String key){
+        return key.replace(RedisConnection.getNamespace(cacheName) + ":", "");
 
     }
 

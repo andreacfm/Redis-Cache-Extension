@@ -5,17 +5,23 @@ public class RedisCacheItem{
     Integer hitCount;
     String key;
     String value;
+    
+    private String cacheName;
 
-    public RedisCacheItem(String key, String value) {
+    public RedisCacheItem(String key, String value, String cacheName) {
         setKey(key);
         setValue(value);
         setHitCount(0);
+        
+        this.cacheName = cacheName;
     }
 
-    public RedisCacheItem(String key, String value, Integer hitCount) {
+    public RedisCacheItem(String key, String value, Integer hitCount, String cacheName) {
         setKey(key);
         setValue(value);
         setHitCount(hitCount);
+        
+        this.cacheName = cacheName;
     }
 
 
@@ -41,5 +47,9 @@ public class RedisCacheItem{
 
     public String getValue() {
         return value;
+    }
+    
+    public String getCacheName() {
+    	return cacheName;
     }
 }

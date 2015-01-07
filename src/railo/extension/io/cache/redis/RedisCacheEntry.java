@@ -35,7 +35,7 @@ public class RedisCacheEntry implements CacheEntry{
     }
 
     public String getKey() {
-        return RedisCacheUtils.removeNamespace(item.getKey());
+        return RedisCacheUtils.removeNamespace(item.getCacheName(), item.getKey());
     }
 
     public Object getValue() {
