@@ -25,11 +25,13 @@ public class RedisCache implements Cache {
     public Functions func = new Functions();
     CFMLEngine engine = CFMLEngineFactory.getInstance();
     Cast caster = engine.getCastUtil();
-    String namespace;
+    //String namespace;
+    private String cacheName;
 
 
     public void init(String cacheName, Struct arguments) throws IOException {
-        RedisConnection.init(arguments);
+    	this.cacheName = cacheName;
+        RedisConnection.init(cacheName, arguments);
     }
 
     public void init(Config config, String[] cacheName, Struct[] arguments) {
@@ -47,18 +49,18 @@ public class RedisCache implements Cache {
 
     public CacheEntry getCacheEntry(String key) throws IOException {
 
-        JedisPool pool = RedisConnection.getInstance();
+        JedisPool pool = RedisConnection.getInstance(cacheName);
         Jedis conn = pool.getResource();
         RedisCacheItem item;
 
         try {
-            String k = RedisCacheUtils.formatKey(key);
+            String k = RedisCacheUtils.formatKey(cacheName, key);
             List<String> val = conn.hmget(k, "value", "hitCount");
             if (val.get(0) == null) {
                 throw (new IOException("Cache key [" + k + "] does not exists"));
             }
             Integer count = caster.toInteger(conn.hincrBy(k, "hitCount", 1));
-            item = new RedisCacheItem(k, val.get(0), count);
+            item = new RedisCacheItem(k, val.get(0), count, cacheName);
 
             return new RedisCacheEntry(item);
         } catch (JedisConnectionException e) {
@@ -100,12 +102,12 @@ public class RedisCache implements Cache {
     }
 
     public void put(String key, Object val, Long idle, Long expire) {
-        JedisPool pool = RedisConnection.getInstance();
+        JedisPool pool = RedisConnection.getInstance(cacheName);
         Jedis conn = pool.getResource();
         try {
             Integer exp = 0;
 
-            String k = RedisCacheUtils.formatKey(key);
+            String k = RedisCacheUtils.formatKey(cacheName, key);
             if (expire != null) {
                 exp = caster.toInteger(expire / 1000);
             // If expire==null AND this is for SESSION scope storage AND idle is not null, use idle as the expire value
@@ -136,10 +138,10 @@ public class RedisCache implements Cache {
     }
 
     public boolean contains(String key) {
-        JedisPool pool = RedisConnection.getInstance();
+        JedisPool pool = RedisConnection.getInstance(cacheName);
         Jedis conn = pool.getResource();
         try {
-            return conn.exists(RedisCacheUtils.formatKey(key));
+            return conn.exists(RedisCacheUtils.formatKey(cacheName, key));
         } catch (JedisConnectionException e) {
             if (null != conn) {
                 pool.returnBrokenResource(conn);
@@ -151,10 +153,10 @@ public class RedisCache implements Cache {
     }
 
     public boolean remove(String key) {
-        JedisPool pool = RedisConnection.getInstance();
+        JedisPool pool = RedisConnection.getInstance(cacheName);
         Jedis conn = pool.getResource();
         try {
-            Long res = conn.del(RedisCacheUtils.formatKey(key));
+            Long res = conn.del(RedisCacheUtils.formatKey(cacheName, key));
             return res == 1;
         } catch (JedisConnectionException e) {
             if (null != conn) {
@@ -185,12 +187,12 @@ public class RedisCache implements Cache {
     }
 
     public List keys() {
-        JedisPool pool = RedisConnection.getInstance();
+        JedisPool pool = RedisConnection.getInstance(cacheName);
         Jedis conn = pool.getResource();
         ArrayList res = null;
 
         try {
-            res = new ArrayList(conn.keys(RedisConnection.NAMESPACE + '*'));
+            res = new ArrayList(conn.keys(RedisConnection.getNamespace(cacheName) + '*'));
         } catch (JedisConnectionException e) {
             if (null != conn) {
                 pool.returnBrokenResource(conn);
@@ -259,7 +261,7 @@ public class RedisCache implements Cache {
     }
 
     private List entriesList(List keys) {
-        JedisPool pool = RedisConnection.getInstance();
+        JedisPool pool = RedisConnection.getInstance(cacheName);
         Jedis conn = pool.getResource();
         ArrayList<RedisCacheEntry> res = null;
 
@@ -268,7 +270,7 @@ public class RedisCache implements Cache {
             Iterator<String> it = keys.iterator();
             while (it.hasNext()) {
                 String k = it.next();
-                res.add(new RedisCacheEntry(new RedisCacheItem(k, conn.get(k))));
+                res.add(new RedisCacheEntry(new RedisCacheItem(k, conn.get(k), cacheName)));
             }
 
         } catch (JedisConnectionException e) {
@@ -284,7 +286,7 @@ public class RedisCache implements Cache {
     private List sanitizeKeys(List keys) {
         for (int i = 0; i < keys.size(); i++) {
             try {
-                keys.set(i, RedisCacheUtils.removeNamespace(caster.toString(keys.get(i))));
+                keys.set(i, RedisCacheUtils.removeNamespace(cacheName, caster.toString(keys.get(i))));
             } catch (PageException e) {
                 e.printStackTrace();
             }
